@@ -1,28 +1,46 @@
 <?php
+
 function detect_any_uppercase($string) {
     // true if lowercasing changes string
     return strtolower($string) != $string;
 }
+
 function detect_any_lowercase($string) {
     // true if uppercasing changes string
     return strtoupper($string) != $string;
 }
 
-
-function password_strength($password) {
-$strength = 0;
-$possible_points = 2;
-
-if(detect_any_uppercase($password)) {
-    $strength += 1;
+function count_numbers($string) {
+    return preg_match_all('/[0-9]/', $string);
 }
-if(detect_any_lowercase($password)) {
-    $strength += 1;
+
+function count_symbols($string) {
+    // You have to decide which symbols count
+    // Regex \W is any non-letter, non-number: too broad
+    // Better to list the ones that count
+    return preg_match_all('/[!@#$%^&*-_+=?]/', $string);
 }
+
 
 function password_strength($password) {
     $strength = 0;
-    $possible_points = 5;
+    $possible_points = 12;
+    $length = strlen($password);
+
+    if(detect_any_uppercase($password)) {
+        $strength += 1;
+    }
+    if(detect_any_lowercase($password)) {
+        $strength += 1;
+    }
+
+    $strength += min(count_numbers($password), 2);
+    $strength += min(count_symbols($password), 2);
+
+    if($length >= 8) {
+        $strength += 2;
+        $strength += min(($length -8) * 0.5, 4);
+    }
 
     $strength_percent = $strength / (float) $possible_points;
     $rating = floor($strength_percent * 10);
